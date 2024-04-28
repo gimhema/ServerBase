@@ -1,0 +1,1 @@
+/usr/bin/c++ -rdynamic CMakeFiles/epoll_tcp_server.dir/src/server.cpp.o -o epoll_tcp_server  -lpthread 
