@@ -1,61 +1,68 @@
-use std::net::{TcpListener, TcpStream};
-use std::io::{Read, Write};
-use std::convert::TryInto;
+use std::io::{self, Cursor, Read, Write};
 
-// 데이터 구조 정의
-#[repr(C)]
-struct Data {
-    id: u32,
-    value: f64,
-    name_len: u32,
-    name: Vec<u8>,
+// 데이터 패킹을 위한 구조체 정의
+#[repr(packed)]
+#[derive(Debug, Clone)]
+struct PackedData {
+    id: u32,       // 4 bytes
+    size: u32,     // 4 bytes
+    value: u64,    // 8 bytes
 }
 
-// 데이터 직렬화
-fn serialize(data: &Data) -> Vec<u8> {
-    let mut buffer = Vec::new();
-    buffer.extend(&data.id.to_le_bytes());
-    buffer.extend(&data.value.to_le_bytes());
-    buffer.extend(&data.name_len.to_le_bytes());
-    buffer.extend(&data.name);
-    buffer
-}
+impl PackedData {
+    fn new(id: u32, value: u64) -> Self {
+        let size = std::mem::size_of::<PackedData>() as u32; // 구조체의 크기
+        PackedData { id, size, value }
+    }
 
-// 데이터 역직렬화
-fn deserialize(buffer: &[u8]) -> Data {
-    let id = u32::from_le_bytes(buffer[0..4].try_into().unwrap());
-    let value = f64::from_le_bytes(buffer[4..12].try_into().unwrap());
-    let name_len = u32::from_le_bytes(buffer[12..16].try_into().unwrap());
-    let name = buffer[16..(16 + name_len as usize)].to_vec();
-    Data { id, value, name_len, name }
-}
+    // 바이너리 직렬화
+    fn serialize(&self) -> Vec<u8> {
+        let mut buffer = Vec::with_capacity(self.size as usize);
+        let mut cursor = Cursor::new(&mut buffer);
+        cursor.write_all(&self.id.to_le_bytes()).unwrap();
+        cursor.write_all(&self.size.to_le_bytes()).unwrap();
+        cursor.write_all(&self.value.to_le_bytes()).unwrap();
+        buffer
+    }
 
-// 클라이언트로부터 데이터를 받고 다시 보내는 함수
-fn handle_client(mut stream: TcpStream) {
-    let mut buffer = [0; 1024]; // 데이터 받을 버퍼
-    let size = stream.read(&mut buffer).unwrap();
+    // 바이너리 역직렬화
+    fn deserialize(buffer: &[u8]) -> io::Result<Self> {
+        let mut cursor = Cursor::new(buffer);
+        let mut id_bytes = [0u8; 4];
+        let mut size_bytes = [0u8; 4];
+        let mut value_bytes = [0u8; 8];
 
-    let data = deserialize(&buffer[0..size]);
-    println!("Received: id={}, value={}, name={:?}", data.id, data.value, String::from_utf8(data.name.clone()).unwrap());
+        cursor.read_exact(&mut id_bytes)?;
+        cursor.read_exact(&mut size_bytes)?;
+        cursor.read_exact(&mut value_bytes)?;
 
-    // 다시 클라이언트로 전송
-    let serialized = serialize(&data);
-    stream.write(&serialized).unwrap();
+        let id = u32::from_le_bytes(id_bytes);
+        let size = u32::from_le_bytes(size_bytes);
+        let value = u64::from_le_bytes(value_bytes);
+
+        if size != buffer.len() as u32 {
+            return Err(io::Error::new(io::ErrorKind::InvalidData, "Size mismatch"));
+        }
+
+        Ok(PackedData { id, size, value })
+    }
 }
 
 fn main() {
-    let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
-    println!("Server listening on port 7878");
+    // 새로운 PackedData 인스턴스 생성
+    let data = PackedData::new(1, 123456789);
+    
+    // 바이너리 직렬화
+    let serialized = data.serialize();
+    println!("Serialized data: {:?}", serialized);
 
-    // 클라이언트 접속 기다림
-    for stream in listener.incoming() {
-        match stream {
-            Ok(stream) => {
-                handle_client(stream);
-            }
-            Err(e) => {
-                println!("Failed to accept connection: {}", e);
-            }
+    // 바이너리 역직렬화
+    match PackedData::deserialize(&serialized) {
+        Ok(deserialized_data) => {
+            println!("Deserialized data: {:?}", deserialized_data);
+        }
+        Err(e) => {
+            println!("Error during deserialization: {}", e);
         }
     }
 }
