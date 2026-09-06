@@ -17,10 +17,14 @@ class Person(
 class PersonManager(
     val persons: MutableMap<Int, Person> = mutableMapOf()
 ) {
-    fun newPerson(person: Person) {
+    fun NewPerson(person: Person) {
         val pId = person.person_id
         if (!persons.containsKey(pId)) {
             persons[pId] = person
         }
+    }
+
+    fun GetPersonByID(id: Int): Person? {
+        return persons[id]
     }
 }
