@@ -1,16 +1,41 @@
 
 package org.example
 
+enum class Auth
+{
+    NONE,
+    READ,
+    WRITE
+}
+
+enum class Role
+{
+    NONE,
+    NORMAL,
+    MASTER
+}
+
+data class PersonalInfo(
+    var name : String,
+    var description : String)
+    
+data class AccountInfo(
+    val id : String,
+    val person_id : Int,
+    val password : String,
+    val reg_date : String,
+    var role : Role
+    )
+
 class Person(
-    val name: String,
-    val person_id: Int,
-    var sessionId: Int = 0,
-    var connected: Boolean = false,
-    var lastLoginAt: Long = 0,
-    var role: String = "guest",
+    val personal_info : PersonalInfo,
+    val account_info : AccountInfo
 ) {
+    fun GetPersonID() : Int {
+        return account_info.person_id
+    }
     fun Connect() {
-        connected = true
+
     }
 }
 
@@ -18,7 +43,7 @@ class PersonManager(
     val persons: MutableMap<Int, Person> = mutableMapOf()
 ) {
     fun NewPerson(person: Person) {
-        val pId = person.person_id
+        val pId = person.GetPersonID()
         if (!persons.containsKey(pId)) {
             persons[pId] = person
         }
