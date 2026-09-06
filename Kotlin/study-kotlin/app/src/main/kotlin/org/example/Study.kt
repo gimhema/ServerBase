@@ -18,7 +18,7 @@ class PersonManager(
     val persons: MutableMap<Int, Person> = mutableMapOf()
 ) {
     fun newPerson(person: Person) {
-        val pId = person.personId
+        val pId = person.person_id
         if (!persons.containsKey(pId)) {
             persons[pId] = person
         }
