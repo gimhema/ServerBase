@@ -34,9 +34,6 @@ class Person(
     fun GetPersonID() : Int {
         return account_info.person_id
     }
-    fun Connect() {
-
-    }
 }
 
 class PersonManager(
