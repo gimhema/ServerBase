@@ -20,26 +20,26 @@ class SessionManager {
     private val sessions = mutableMapOf<String, Session>()
     private val byPersonId = mutableMapOf<Int, MutableSet<String>>()
 
-    // fun onConnected(conn: Connection): Session 
-    // { 
+    fun onConnected(conn: Connection): Session 
+    { 
         
-    // }
+    }
     
-    // fun onAuthenticated(sessionId: String, personId: Int) 
-    // { 
+    fun onAuthenticated(sessionId: String, personId: Int) 
+    { 
         
         
-    // }
+    }
     
-    // fun onDisconnected(sessionId: String) 
-    // { 
+    fun onDisconnected(sessionId: String) 
+    { 
         
         
-    // }
+    }
     
-    // fun findByPersonId(id: Int): List<Session> 
-    // { 
+    fun findByPersonId(id: Int): List<Session> 
+    { 
         
         
-    // }
+    }
 }
