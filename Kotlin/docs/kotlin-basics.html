@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kotlin 기초 튜토리얼</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+    --bg: #ffffff;
+    --bg-alt: #f6f7f9;
+    --fg: #1c1e21;
+    --fg-muted: #5b6270;
+    --border: #e3e5e8;
+    --accent: #7f52ff;
+    --accent-fg: #ffffff;
+    --code-bg: #f4f2fb;
+    --code-fg: #4a2fb8;
+    --block-bg: #f6f7f9;
+    --ok: #1a7f5a;
+    --warn-bg: #fff6e5;
+    --warn-border: #f0c452;
+    --link: #6b3fd4;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14151a;
+      --bg-alt: #1b1d24;
+      --fg: #e7e8ec;
+      --fg-muted: #a2a6b0;
+      --border: #2c2f38;
+      --accent: #a480ff;
+      --accent-fg: #14151a;
+      --code-bg: #241f38;
+      --code-fg: #c7b3ff;
+      --block-bg: #1b1d24;
+      --ok: #4fd8a4;
+      --warn-bg: #2c2717;
+      --warn-border: #7a5c17;
+      --link: #b79bff;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #14151a;
+    --bg-alt: #1b1d24;
+    --fg: #e7e8ec;
+    --fg-muted: #a2a6b0;
+    --border: #2c2f38;
+    --accent: #a480ff;
+    --accent-fg: #14151a;
+    --code-bg: #241f38;
+    --code-fg: #c7b3ff;
+    --block-bg: #1b1d24;
+    --ok: #4fd8a4;
+    --warn-bg: #2c2717;
+    --warn-border: #7a5c17;
+    --link: #b79bff;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Pretendard, Roboto, "Noto Sans KR", sans-serif;
+    line-height: 1.65;
+    font-size: 15.5px;
+  }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+
+  a { color: var(--link); }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  header.hero {
+    padding: 48px 24px 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  header.hero h1 {
+    margin: 0 0 8px;
+    font-size: 1.9rem;
+    letter-spacing: -0.02em;
+  }
+  header.hero p {
+    margin: 0;
+    color: var(--fg-muted);
+    max-width: 640px;
+  }
+  .badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .badge {
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  nav.toc {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    align-self: start;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 24px 16px 40px;
+    border-right: 1px solid var(--border);
+  }
+  @media (max-width: 860px) {
+    nav.toc {
+      position: static;
+      max-height: none;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+    }
+  }
+  nav.toc .toc-title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-muted);
+    margin-bottom: 10px;
+  }
+  nav.toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: toc;
+  }
+  nav.toc li { margin: 0; }
+  nav.toc a {
+    counter-increment: toc;
+    display: block;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    color: var(--fg);
+    text-decoration: none;
+  }
+  nav.toc a::before {
+    content: counter(toc) ". ";
+    color: var(--accent);
+    font-weight: 600;
+  }
+  nav.toc a:hover { background: var(--bg-alt); }
+
+  main {
+    padding: 24px 28px 80px;
+    min-width: 0;
+  }
+  @media (max-width: 860px) {
+    main { padding: 20px 20px 60px; }
+  }
+
+  section {
+    padding-top: 40px;
+    margin-top: 8px;
+    border-top: 1px solid var(--border);
+    scroll-margin-top: 16px;
+  }
+  section:first-of-type { border-top: none; }
+
+  section h2 {
+    font-size: 1.4rem;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  section h2 .num {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    font-size: 1rem;
+  }
+  section > .lead {
+    color: var(--fg-muted);
+    margin: 6px 0 20px;
+  }
+  h3 {
+    font-size: 1.05rem;
+    margin: 28px 0 8px;
+  }
+  p { margin: 10px 0; }
+
+  pre {
+    background: var(--block-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 0.86rem;
+    line-height: 1.55;
+  }
+  code {
+    font-family: "SF Mono", ui-monospace, Menlo, Consolas, "Noto Sans Mono", monospace;
+  }
+  :not(pre) > code {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 0.1em 0.4em;
+    border-radius: 5px;
+    font-size: 0.86em;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  .note {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 16px 0;
+    font-size: 0.92rem;
+  }
+  .note strong { color: var(--accent); }
+
+  .warn {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-left: 3px solid var(--warn-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 16px 0;
+    font-size: 0.92rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--fg-muted); font-weight: 600; }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 640px) {
+    .grid2 { grid-template-columns: 1fr; }
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: var(--bg-alt);
+  }
+  .card h4 {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  footer {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 24px 28px 60px;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+  }
+  .top-link { font-size: 0.8rem; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Kotlin 기초 튜토리얼</h1>
+  <p>초급부터 중급까지 — <code>study-kotlin</code> 프로젝트를 실습 환경으로 사용하는 Kotlin 문법 안내서입니다. 각 예제는 <code>./gradlew run</code> / <code>kotlinc</code> REPL로 바로 실행해볼 수 있습니다.</p>
+  <div class="badges">
+    <span class="badge">Kotlin 2.4</span>
+    <span class="badge">JDK 21</span>
+    <span class="badge">Fedora / Windows 겸용</span>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="목차">
+  <div class="toc-title">목차</div>
+  <ol>
+    <li><a href="#vars">변수와 타입</a></li>
+    <li><a href="#functions">함수</a></li>
+    <li><a href="#control-flow">제어문</a></li>
+    <li><a href="#null-safety">Null 안전성</a></li>
+    <li><a href="#classes">클래스와 데이터 클래스</a></li>
+    <li><a href="#collections">컬렉션</a></li>
+    <li><a href="#lambdas">람다와 고차함수</a></li>
+    <li><a href="#extensions">확장 함수</a></li>
+    <li><a href="#scope-functions">스코프 함수</a></li>
+    <li><a href="#exceptions">예외 처리</a></li>
+    <li><a href="#enum-sealed">enum과 sealed class</a></li>
+    <li><a href="#run-it">실습에서 실행하기</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="vars">
+  <h2><span class="num">01</span> 변수와 타입</h2>
+  <p class="lead"><code>val</code>은 재할당 불가(불변), <code>var</code>는 재할당 가능. 기본은 항상 <code>val</code>부터 시작합니다.</p>
+
+<pre><code>val name = "Kotlin"      // 불변 — 타입은 String으로 추론됨
+var count = 0             // 가변
+count = 1                  // OK
+// name = "Java"          // 컴파일 에러
+
+val age: Int = 30          // 타입 명시도 가능
+val height: Double = 175.5
+val isStudent: Boolean = true
+val initial: Char = 'K'
+
+// 문자열 템플릿 — Java의 + 연결 대신 $ 사용
+println("이름: $name, 내년 나이는 ${age + 1}살")</code></pre>
+
+  <div class="note"><strong>알아두기</strong> Kotlin의 <code>Int</code>, <code>Double</code>, <code>Boolean</code> 등은 전부 객체이며 Java 같은 primitive/wrapper 구분이 없습니다. 컴파일러가 가능한 경우 알아서 primitive로 최적화합니다.</div>
+</section>
+
+<section id="functions">
+  <h2><span class="num">02</span> 함수</h2>
+  <p class="lead">단일 표현식 함수, 기본값 파라미터, 이름 있는 인자가 Kotlin 함수의 핵심 특징입니다.</p>
+
+<pre><code>fun add(a: Int, b: Int): Int {
+    return a + b
+}
+
+// 단일 표현식 함수 — 중괄호/return 생략
+fun square(x: Int): Int = x * x
+
+// 반환 타입도 추론 가능
+fun greet(name: String) = "Hello, $name!"
+
+// 기본값 파라미터
+fun power(base: Int, exp: Int = 2) = Math.pow(base.toDouble(), exp.toDouble())
+
+power(3)                       // exp는 기본값 2 사용
+power(base = 2, exp = 10)       // 이름 있는 인자 — 순서 무관
+power(exp = 3, base = 2)        // 순서 바꿔도 OK</code></pre>
+
+  <p>파라미터 개수가 많아지면 세로로 나열하는 게 관례입니다 (trailing comma 포함):</p>
+<pre><code>fun createPerson(
+    name: String,
+    sessionId: Int = 0,
+    connected: Boolean = false,
+    role: String = "guest",
+) { /* ... */ }</code></pre>
+</section>
+
+<section id="control-flow">
+  <h2><span class="num">03</span> 제어문</h2>
+  <p class="lead">Kotlin에서는 <code>if</code>와 <code>when</code>이 <strong>값을 반환하는 표현식</strong>으로도 쓰입니다.</p>
+
+<pre><code>// if 표현식 — 삼항연산자 대체
+val max = if (a > b) a else b
+
+// when — switch보다 강력함 (범위, 타입, 임의 조건 사용 가능)
+val description = when {
+    age < 13 -> "어린이"
+    age < 20 -> "청소년"
+    else -> "성인"
+}
+
+val typeName = when (value) {
+    is Int -> "정수"
+    is String -> "문자열"
+    else -> "기타"
+}
+
+// for — 범위(range) 기반
+for (i in 1..5) println(i)          // 1,2,3,4,5
+for (i in 5 downTo 1 step 2) { }     // 5,3,1
+for (i in 0 until 5) { }             // 0,1,2,3,4 (5 미포함)
+
+// while은 Java와 동일
+var i = 0
+while (i < 5) { i++ }</code></pre>
+</section>
+
+<section id="null-safety">
+  <h2><span class="num">04</span> Null 안전성</h2>
+  <p class="lead">Kotlin 타입 시스템은 "null이 될 수 있는지"를 타입에 포함시켜 NPE를 컴파일 타임에 막습니다.</p>
+
+<pre><code>var nickname: String? = null    // '?' 가 있어야 null 허용
+
+// nickname.length              // 컴파일 에러 — null일 수 있어서 바로 접근 불가
+
+val len = nickname?.length              // 안전 호출 — null이면 결과도 null (Int?)
+val len2 = nickname?.length ?: 0         // 엘비스 연산자 — null이면 기본값 0 (Int)
+val len3 = nickname!!.length             // non-null 단언 — null이면 NPE 발생 (주의해서 사용)
+
+nickname?.let {
+    println("별명: $it")   // nickname이 null이 아닐 때만 실행
+}</code></pre>
+
+  <div class="warn"><strong>!! 사용 주의</strong> <code>!!</code>는 "null 아님을 확신한다"는 선언이라 틀리면 그대로 NPE가 납니다. 가능하면 <code>?:</code>나 <code>?.let</code>으로 처리하는 걸 권장합니다.</div>
+</section>
+
+<section id="classes">
+  <h2><span class="num">05</span> 클래스와 데이터 클래스</h2>
+  <p class="lead">주 생성자에 <code>val</code>/<code>var</code>를 붙이면 파라미터 선언과 프로퍼티 선언이 한 번에 끝납니다.</p>
+
+<pre><code>class Person(
+    val name: String,
+    var sessionId: Int = 0,
+    var connected: Boolean = false,
+)
+
+val p = Person("Kim")
+val p2 = Person("Lee", sessionId = 5, connected = true)
+p2.sessionId = 10        // var라서 재할당 가능
+println(p.name)           // getter 없이 프로퍼티처럼 접근</code></pre>
+
+  <h3>data class — DTO/모델에 최적</h3>
+<pre><code>data class Person(val name: String, var sessionId: Int = 0)
+
+val a = Person("Kim", 1)
+val b = Person("Kim", 1)
+
+a == b                 // true — 필드값 기준 비교 (equals/hashCode 자동 생성)
+println(a)               // Person(name=Kim, sessionId=1) — toString 자동 생성
+val c = a.copy(sessionId = 2)   // 일부 필드만 바꾼 복사본</code></pre>
+
+  <h3>커스텀 getter/setter</h3>
+  <p>생성자 괄호 안에서는 커스텀 접근자를 못 붙입니다. 검증/로깅이 필요한 프로퍼티만 본문으로 옮기세요.</p>
+<pre><code>class Person(
+    val name: String,
+    sessionId: Int = 0,      // val/var 없음 — 초기화 값 전달용 파라미터
+) {
+    var sessionId: Int = sessionId
+        set(value) {
+            field = value.coerceAtLeast(0)   // field: 실제 저장공간(backing field)
+        }
+
+    var lastLoginAt: Long = 0
+        private set           // 밖에서는 읽기만 가능
+}</code></pre>
+  <div class="note"><strong>field 키워드</strong> 커스텀 setter 안에서 프로퍼티 이름을 그대로 쓰면(<code>sessionId = value</code>) 무한 재귀에 빠집니다. 반드시 <code>field</code>로 backing field에 접근해야 합니다.</div>
+
+  <h3>보조 생성자 (secondary constructor)</h3>
+  <p>대부분의 경우 기본값 파라미터로 충분하지만, 다른 방식의 초기화가 필요하면 <code>constructor</code>로 추가할 수 있습니다. 항상 주 생성자를 거쳐야(<code>this(...)</code>) 합니다.</p>
+<pre><code>class Person(val name: String, var sessionId: Int = 0) {
+    constructor(name: String) : this(name, sessionId = 0) {
+        println("$name 새 세션 시작")
+    }
+}</code></pre>
+</section>
+
+<section id="collections">
+  <h2><span class="num">06</span> 컬렉션</h2>
+  <p class="lead">List(순서 있는 목록), Set(중복 없는 집합), Map(key-value)이 3대 컬렉션입니다. 기본은 읽기 전용, <code>mutable</code> 접두 버전이 변경 가능 버전입니다.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <h4>List</h4>
+<pre><code>val names = listOf("Kim", "Lee")
+names[0]              // "Kim"
+names.size
+
+val m = mutableListOf("Kim")
+m.add("Lee")
+m.removeAt(0)</code></pre>
+    </div>
+    <div class="card">
+      <h4>Set</h4>
+<pre><code>val ids = setOf(1, 2, 2, 3)   // {1,2,3}
+
+val m = mutableSetOf&lt;Int&gt;()
+m.add(1)
+m.contains(1)   // true</code></pre>
+    </div>
+  </div>
+
+  <h3>Map</h3>
+<pre><code>val sessions: Map&lt;String, Int&gt; = mapOf("Kim" to 101, "Lee" to 102)
+sessions["Kim"]        // 101 (타입은 Int?)
+sessions["Choi"]        // null
+
+val mutableSessions = mutableMapOf&lt;String, Int&gt;()
+mutableSessions["Kim"] = 101   // 삽입/갱신
+mutableSessions.remove("Kim")
+
+for ((name, id) in sessions) {
+    println("$name -> $id")
+}</code></pre>
+  <p><code>"Kim" to 101</code>은 <code>Pair("Kim", 101)</code>을 만드는 중위 함수 호출입니다.</p>
+</section>
+
+<section id="lambdas">
+  <h2><span class="num">07</span> 람다와 고차함수</h2>
+  <p class="lead">컬렉션은 for문보다 <strong>람다를 인자로 받는 함수</strong>와 함께 쓸 때 진가를 발휘합니다.</p>
+
+<pre><code>data class Person(val name: String, var connected: Boolean = false)
+
+val people = listOf(
+    Person("Kim", true),
+    Person("Lee", false),
+    Person("Park", true),
+)
+
+people.filter { it.connected }          // 조건에 맞는 것만 → [Kim, Park]
+people.map { it.name }                    // 각 요소 변환 → [Kim, Lee, Park]
+people.forEach { println(it.name) }       // 순회
+people.find { it.name == "Kim" }          // 첫 매칭 (없으면 null)
+people.any { it.connected }               // 하나라도 있으면 true
+people.all { it.connected }               // 전부 만족해야 true
+people.count { it.connected }             // 개수
+
+// 체이닝 — 실무에서 가장 흔한 패턴
+val onlineNames = people
+    .filter { it.connected }
+    .map { it.name }
+    .sorted()</code></pre>
+
+  <p><code>it</code>은 람다가 파라미터 하나만 가질 때 쓸 수 있는 암묵적 이름입니다. 명시하려면 <code>{ person -&gt; person.connected }</code>처럼 씁니다.</p>
+</section>
+
+<section id="extensions">
+  <h2><span class="num">08</span> 확장 함수</h2>
+  <p class="lead">기존 클래스(내가 만들지 않은 클래스 포함)에 새 함수를 "추가"할 수 있습니다. 상속이나 래퍼 클래스 없이 가독성 좋은 API를 만드는 Kotlin 특유의 기능입니다.</p>
+
+<pre><code>// String에 함수 하나를 추가
+fun String.isValidSessionId(): Boolean = this.isNotBlank() && this.length &gt;= 4
+
+"abcd".isValidSessionId()     // true — 마치 String의 원래 메서드처럼 호출
+
+// 우리가 만든 클래스에도 적용
+data class Person(val name: String, var connected: Boolean = false)
+
+fun Person.displayLabel(): String =
+    if (connected) "$name (온라인)" else "$name (오프라인)"
+
+val p = Person("Kim", true)
+println(p.displayLabel())      // "Kim (온라인)"</code></pre>
+
+  <div class="note"><strong>내부 동작</strong> 실제로 클래스를 수정하는 게 아니라, 컴파일 시점에 <code>displayLabel(person)</code> 같은 정적 함수 호출로 변환됩니다. 그래서 <code>private</code> 멤버에는 접근할 수 없습니다.</div>
+</section>
+
+<section id="scope-functions">
+  <h2><span class="num">09</span> 스코프 함수 (let / run / with / apply / also)</h2>
+  <p class="lead">객체를 받아 블록을 실행하고, 그 결과나 객체 자신을 돌려주는 함수들입니다. 처음엔 헷갈리지만 실무 Kotlin 코드에서 매우 자주 보입니다.</p>
+
+<table>
+  <thead><tr><th>함수</th><th>블록 안 참조</th><th>반환값</th><th>주 용도</th></tr></thead>
+  <tbody>
+    <tr><td><code>let</code></td><td><code>it</code></td><td>블록의 결과</td><td>null 체크 후 처리, 값 변환</td></tr>
+    <tr><td><code>run</code></td><td><code>this</code></td><td>블록의 결과</td><td>객체 초기화 + 계산 결과 반환</td></tr>
+    <tr><td><code>with</code></td><td><code>this</code></td><td>블록의 결과</td><td>한 객체의 멤버를 여러 번 다룰 때</td></tr>
+    <tr><td><code>apply</code></td><td><code>this</code></td><td>객체 자신</td><td>객체 설정(빌더 패턴처럼)</td></tr>
+    <tr><td><code>also</code></td><td><code>it</code></td><td>객체 자신</td><td>로깅 등 부수 작업 끼워넣기</td></tr>
+  </tbody>
+</table>
+
+<pre><code>val person = Person("Kim").apply {
+    connected = true          // this 생략 — 프로퍼티 바로 접근
+}   // person 자신을 반환
+
+val label = person.let {
+    if (it.connected) "온라인" else "오프라인"
+}   // let의 블록 결과(String)를 반환
+
+person.also {
+    println("생성됨: ${it.name}")   // 로깅만 하고 person 자신을 그대로 반환
+}.connect()</code></pre>
+</section>
+
+<section id="exceptions">
+  <h2><span class="num">10</span> 예외 처리</h2>
+  <p class="lead">문법은 Java와 비슷하지만, Kotlin에는 <strong>checked exception이 없습니다</strong> — <code>throws</code> 선언이 강제되지 않습니다.</p>
+
+<pre><code>fun parseSessionId(raw: String): Int {
+    return try {
+        raw.toInt()
+    } catch (e: NumberFormatException) {
+        println("잘못된 sessionId: $raw")
+        -1
+    } finally {
+        println("파싱 시도 종료")
+    }
+}
+
+// try도 표현식이라 값으로 바로 받을 수 있음
+val id = parseSessionId("abc")   // -1
+
+// 커스텀 예외
+class InvalidSessionException(message: String) : Exception(message)
+
+fun requireConnected(person: Person) {
+    if (!person.connected) {
+        throw InvalidSessionException("${person.name} is not connected")
+    }
+}</code></pre>
+</section>
+
+<section id="enum-sealed">
+  <h2><span class="num">11</span> enum과 sealed class</h2>
+  <p class="lead">상태나 종류가 정해진 값을 표현할 때 씁니다. <code>when</code>과 함께 쓰면 분기 누락을 컴파일러가 잡아줍니다.</p>
+
+<pre><code>enum class ConnectionState { CONNECTING, CONNECTED, DISCONNECTED }
+
+fun describe(state: ConnectionState) = when (state) {
+    ConnectionState.CONNECTING -> "연결 중"
+    ConnectionState.CONNECTED -> "연결됨"
+    ConnectionState.DISCONNECTED -> "끊김"
+    // 하나라도 빠뜨리면 컴파일 에러 (when이 exhaustive해야 함)
+}
+
+// sealed class — enum보다 유연함 (각 케이스가 데이터를 가질 수 있음)
+sealed class NetworkResult
+data class Success(val data: String) : NetworkResult()
+data class Failure(val error: Throwable) : NetworkResult()
+object Loading : NetworkResult()
+
+fun handle(result: NetworkResult) = when (result) {
+    is Success -> println("받음: ${result.data}")
+    is Failure -> println("실패: ${result.error.message}")
+    Loading -> println("로딩 중")
+}</code></pre>
+</section>
+
+<section id="run-it">
+  <h2><span class="num">12</span> 실습에서 실행하기</h2>
+  <p class="lead"><code>study-kotlin</code> 프로젝트에서 위 예제들을 직접 실행해보는 두 가지 방법입니다.</p>
+
+<pre><code># 1) REPL — 문법 하나씩 빠르게 테스트
+kotlinc
+
+# 2) 프로젝트 안 App.kt에 코드를 넣고 실행
+cd study-kotlin
+./gradlew run      # Windows: .\gradlew.bat run
+
+# 테스트 실행
+./gradlew test</code></pre>
+
+  <p class="top-link"><a href="#vars">↑ 목차로 돌아가기</a></p>
+</section>
+
+</main>
+</div>
+
+<footer>
+  study-kotlin 스터디용 참고 문서 · Kotlin 2.4 / JDK 21 기준
+</footer>
+
+</body>
+</html>
