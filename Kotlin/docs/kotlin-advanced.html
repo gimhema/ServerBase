@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kotlin 고급 튜토리얼</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+
+    --bg: #ffffff;
+    --bg-alt: #f6f7f9;
+    --fg: #1c1e21;
+    --fg-muted: #5b6270;
+    --border: #e3e5e8;
+    --accent: #b3541e;
+    --accent-fg: #ffffff;
+    --code-bg: #fbeee0;
+    --code-fg: #8a4416;
+    --block-bg: #f6f7f9;
+    --ok: #1a7f5a;
+    --warn-bg: #fff6e5;
+    --warn-border: #f0c452;
+    --link: #a2521a;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14151a;
+      --bg-alt: #1b1d24;
+      --fg: #e7e8ec;
+      --fg-muted: #a2a6b0;
+      --border: #2c2f38;
+      --accent: #e8a565;
+      --accent-fg: #14151a;
+      --code-bg: #322416;
+      --code-fg: #f0c68e;
+      --block-bg: #1b1d24;
+      --ok: #4fd8a4;
+      --warn-bg: #2c2717;
+      --warn-border: #7a5c17;
+      --link: #f0c68e;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #14151a;
+    --bg-alt: #1b1d24;
+    --fg: #e7e8ec;
+    --fg-muted: #a2a6b0;
+    --border: #2c2f38;
+    --accent: #e8a565;
+    --accent-fg: #14151a;
+    --code-bg: #322416;
+    --code-fg: #f0c68e;
+    --block-bg: #1b1d24;
+    --ok: #4fd8a4;
+    --warn-bg: #2c2717;
+    --warn-border: #7a5c17;
+    --link: #f0c68e;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Pretendard, Roboto, "Noto Sans KR", sans-serif;
+    line-height: 1.65;
+    font-size: 15.5px;
+  }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+
+  a { color: var(--link); }
+
+  .layout {
+    display: grid;
+    grid-template-columns: 240px minmax(0, 1fr);
+    max-width: 1180px;
+    margin: 0 auto;
+  }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  header.hero {
+    padding: 48px 24px 28px;
+    border-bottom: 1px solid var(--border);
+  }
+  header.hero h1 {
+    margin: 0 0 8px;
+    font-size: 1.9rem;
+    letter-spacing: -0.02em;
+  }
+  header.hero p {
+    margin: 0;
+    color: var(--fg-muted);
+    max-width: 640px;
+  }
+  .badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .badge {
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--code-bg);
+    color: var(--code-fg);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .crumb {
+    font-size: 0.82rem;
+    margin-top: 14px;
+  }
+  .crumb a { text-decoration: none; }
+
+  nav.toc {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    align-self: start;
+    max-height: 100vh;
+    overflow-y: auto;
+    padding: 24px 16px 40px;
+    border-right: 1px solid var(--border);
+  }
+  @media (max-width: 860px) {
+    nav.toc {
+      position: static;
+      max-height: none;
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+    }
+  }
+  nav.toc .toc-title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--fg-muted);
+    margin-bottom: 10px;
+  }
+  nav.toc ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    counter-reset: toc;
+  }
+  nav.toc li { margin: 0; }
+  nav.toc a {
+    counter-increment: toc;
+    display: block;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    color: var(--fg);
+    text-decoration: none;
+  }
+  nav.toc a::before {
+    content: counter(toc) ". ";
+    color: var(--accent);
+    font-weight: 600;
+  }
+  nav.toc a:hover { background: var(--bg-alt); }
+
+  main {
+    padding: 24px 28px 80px;
+    min-width: 0;
+  }
+  @media (max-width: 860px) {
+    main { padding: 20px 20px 60px; }
+  }
+
+  section {
+    padding-top: 40px;
+    margin-top: 8px;
+    border-top: 1px solid var(--border);
+    scroll-margin-top: 16px;
+  }
+  section:first-of-type { border-top: none; }
+
+  section h2 {
+    font-size: 1.4rem;
+    margin: 0 0 4px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  section h2 .num {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    font-size: 1rem;
+  }
+  section > .lead {
+    color: var(--fg-muted);
+    margin: 6px 0 20px;
+  }
+  h3 {
+    font-size: 1.05rem;
+    margin: 28px 0 8px;
+  }
+  p { margin: 10px 0; }
+
+  pre {
+    background: var(--block-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 0.86rem;
+    line-height: 1.55;
+  }
+  code {
+    font-family: "SF Mono", ui-monospace, Menlo, Consolas, "Noto Sans Mono", monospace;
+  }
+  :not(pre) > code {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    padding: 0.1em 0.4em;
+    border-radius: 5px;
+    font-size: 0.86em;
+  }
+  pre code { background: none; padding: 0; color: inherit; }
+
+  .note {
+    background: var(--bg-alt);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 16px 0;
+    font-size: 0.92rem;
+  }
+  .note strong { color: var(--accent); }
+
+  .warn {
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
+    border-left: 3px solid var(--warn-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 16px 0;
+    font-size: 0.92rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 0.9rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  th { color: var(--fg-muted); font-weight: 600; }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 640px) {
+    .grid2 { grid-template-columns: 1fr; }
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: var(--bg-alt);
+  }
+  .card h4 {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  footer {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 24px 28px 60px;
+    color: var(--fg-muted);
+    font-size: 0.85rem;
+    border-top: 1px solid var(--border);
+  }
+  .top-link { font-size: 0.8rem; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Kotlin 고급 튜토리얼</h1>
+  <p>제네릭 분산, 위임, 인라인 함수, 코루틴/Flow, DSL 설계까지 — 기초 문법을 익힌 뒤 넘어가는 중~고급 주제 모음입니다.</p>
+  <div class="badges">
+    <span class="badge">Kotlin 2.4</span>
+    <span class="badge">kotlinx.coroutines</span>
+    <span class="badge">JDK 21</span>
+  </div>
+  <p class="crumb">↩ <a href="kotlin-basics.html">기초 문법 튜토리얼로 돌아가기</a></p>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="목차">
+  <div class="toc-title">목차</div>
+  <ol>
+    <li><a href="#generics">제네릭과 분산(variance)</a></li>
+    <li><a href="#delegation">위임 (by)</a></li>
+    <li><a href="#inline">인라인 함수</a></li>
+    <li><a href="#operators">연산자 오버로딩 · infix</a></li>
+    <li><a href="#objects">object · companion object</a></li>
+    <li><a href="#value-sealed">value class · sealed interface</a></li>
+    <li><a href="#destructuring">구조분해 · typealias</a></li>
+    <li><a href="#sequence">Sequence — 지연 평가</a></li>
+    <li><a href="#coroutines">코루틴 기초</a></li>
+    <li><a href="#structured-concurrency">구조적 동시성</a></li>
+    <li><a href="#flow">Flow — 비동기 스트림</a></li>
+    <li><a href="#dsl">DSL 만들기 (수신 객체 람다)</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="generics">
+  <h2><span class="num">01</span> 제네릭과 분산(variance)</h2>
+  <p class="lead">기초에서 <code>List&lt;String&gt;</code> 정도로 썼다면, 여기서는 제네릭 클래스/함수를 직접 만들 때 필요한 <code>in</code>/<code>out</code> 분산과 <code>reified</code>를 다룹니다.</p>
+
+<pre><code>// 제네릭 클래스
+class Box&lt;T&gt;(var value: T)
+
+val intBox = Box(1)
+val strBox = Box("hi")
+
+// 제네릭 함수
+fun &lt;T&gt; firstOrNull(list: List&lt;T&gt;): T? = if (list.isEmpty()) null else list[0]</code></pre>
+
+  <h3>out — 공변(covariant), 생산자</h3>
+<pre><code>// List&lt;out T&gt;는 T를 "내보내기만" 함 (읽기 전용이라 안전)
+interface Producer&lt;out T&gt; {
+    fun produce(): T
+}
+
+val strings: Producer&lt;String&gt; = object : Producer&lt;String&gt; {
+    override fun produce() = "hello"
+}
+val anyProducer: Producer&lt;Any&gt; = strings   // OK — String은 Any의 하위 타입이므로 허용</code></pre>
+
+  <h3>in — 반공변(contravariant), 소비자</h3>
+<pre><code>interface Consumer&lt;in T&gt; {
+    fun consume(item: T)
+}
+
+val anyConsumer: Consumer&lt;Any&gt; = object : Consumer&lt;Any&gt; {
+    override fun consume(item: Any) { println(item) }
+}
+val stringConsumer: Consumer&lt;String&gt; = anyConsumer   // OK — Any를 처리할 수 있으면 String도 처리 가능</code></pre>
+
+  <div class="note"><strong>기억하는 법</strong> <code>out</code>은 반환 타입 자리에만 등장(생산), <code>in</code>은 파라미터 자리에만 등장(소비). List는 <code>out</code>, Comparator는 <code>in</code>이 붙는 이유가 여기서 나옵니다.</div>
+
+  <h3>reified — 런타임에도 타입 정보 유지</h3>
+  <p>일반 제네릭은 JVM의 타입 소거(type erasure) 때문에 런타임에 <code>T</code>가 뭔지 알 수 없습니다. <code>inline</code> + <code>reified</code>를 쓰면 예외적으로 가능합니다.</p>
+<pre><code>inline fun &lt;reified T&gt; Any?.isInstanceOf(): Boolean = this is T
+
+"hello".isInstanceOf&lt;String&gt;()   // true
+42.isInstanceOf&lt;String&gt;()         // false
+
+// 실무 예: JSON 역직렬화 헬퍼
+inline fun &lt;reified T&gt; parseJson(json: String): T =
+    Gson().fromJson(json, T::class.java)   // T::class 를 런타임에 그대로 사용 가능</code></pre>
+</section>
+
+<section id="delegation">
+  <h2><span class="num">02</span> 위임 (by)</h2>
+  <p class="lead">상속 대신 "위임"으로 재사용하는 Kotlin 1급 문법입니다. 클래스 위임과 프로퍼티 위임 두 종류가 있습니다.</p>
+
+  <h3>클래스 위임</h3>
+<pre><code>interface Repository {
+    fun findById(id: Int): String?
+}
+
+class InMemoryRepository : Repository {
+    private val data = mutableMapOf(1 to "Kim")
+    override fun findById(id: Int) = data[id]
+}
+
+// LoggingRepository는 Repository의 모든 메서드를 base에 위임하면서
+// 필요한 것만 오버라이드
+class LoggingRepository(private val base: Repository) : Repository by base {
+    override fun findById(id: Int): String? {
+        println("조회: $id")
+        return base.findById(id)
+    }
+}</code></pre>
+
+  <h3>프로퍼티 위임 — <code>lazy</code></h3>
+<pre><code>val expensive: String by lazy {
+    println("최초 접근 시 한 번만 계산됨")
+    computeExpensiveValue()
+}
+// expensive를 처음 읽을 때 블록이 실행되고, 이후엔 캐시된 값을 반환</code></pre>
+
+  <h3>프로퍼티 위임 — <code>observable</code></h3>
+<pre><code>import kotlin.properties.Delegates
+
+class Person {
+    var connected: Boolean by Delegates.observable(false) { _, old, new ->
+        println("connected: $old -> $new")
+    }
+}
+
+val p = Person()
+p.connected = true   // 출력: connected: false -> true</code></pre>
+
+  <p>직접 <code>ReadWriteProperty</code>를 구현해서 커스텀 위임도 만들 수 있습니다 — 예를 들어 세션 캐시, 스레드 안전한 프로퍼티 등에 활용됩니다.</p>
+</section>
+
+<section id="inline">
+  <h2><span class="num">03</span> 인라인 함수</h2>
+  <p class="lead">고차함수(람다를 인자로 받는 함수)는 매 호출마다 함수 객체가 생성되는 비용이 있습니다. <code>inline</code>은 컴파일 시점에 함수 본문을 호출부에 그대로 복사해 넣어 이 비용을 없앱니다.</p>
+
+<pre><code>inline fun measureTime(block: () -&gt; Unit): Long {
+    val start = System.currentTimeMillis()
+    block()
+    return System.currentTimeMillis() - start
+}
+
+val elapsed = measureTime {
+    Thread.sleep(100)
+}</code></pre>
+
+  <table>
+    <thead><tr><th>키워드</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>inline</code></td><td>함수 본문 + 람다를 호출부에 인라인 전개</td></tr>
+      <tr><td><code>noinline</code></td><td>여러 람다 파라미터 중 특정 람다만 인라인 제외 (다른 함수에 넘길 때 필요)</td></tr>
+      <tr><td><code>crossinline</code></td><td>람다를 인라인은 하되, 비지역 반환(non-local return)은 금지 (다른 실행 컨텍스트에 넘길 때)</td></tr>
+    </tbody>
+  </table>
+
+<pre><code>inline fun runBoth(crossinline a: () -&gt; Unit, noinline b: () -&gt; Unit) {
+    val runnable = Runnable { a() }   // crossinline이라 안전 — 여기서 return 못 함
+    val stored: () -&gt; Unit = b        // noinline이라 변수에 저장 가능
+    runnable.run()
+    stored()
+}</code></pre>
+
+  <div class="note"><strong>실무 팁</strong> <code>filter</code>, <code>map</code>, <code>let</code>, <code>apply</code> 같은 표준 라이브러리 함수는 전부 <code>inline</code>입니다. 그래서 람다를 아무리 많이 체이닝해도 함수 객체 생성 오버헤드가 없습니다.</div>
+</section>
+
+<section id="operators">
+  <h2><span class="num">04</span> 연산자 오버로딩 · infix 함수</h2>
+  <p class="lead">정해진 이름의 함수를 <code>operator</code>로 선언하면 <code>+</code>, <code>[]</code> 같은 연산자로 쓸 수 있습니다.</p>
+
+<pre><code>data class Vector2(val x: Int, val y: Int) {
+    operator fun plus(other: Vector2) = Vector2(x + other.x, y + other.y)
+    operator fun get(index: Int) = if (index == 0) x else y
+    operator fun contains(value: Int) = value == x || value == y
+}
+
+val v = Vector2(1, 2) + Vector2(3, 4)   // Vector2(4, 6) — plus() 호출
+v[0]                                      // 4 — get() 호출
+2 in v                                    // true — contains() 호출</code></pre>
+
+  <h3>infix 함수</h3>
+  <p>파라미터 하나짜리 멤버/확장 함수를 점(.)과 괄호 없이 중위 표기로 쓸 수 있게 합니다. <code>to</code>, <code>and</code>, <code>step</code>이 대표적입니다.</p>
+<pre><code>infix fun Person.assignTo(room: String): String = "${this.name} -> $room"
+
+val result = person assignTo "101호"   // person.assignTo("101호")와 동일</code></pre>
+</section>
+
+<section id="objects">
+  <h2><span class="num">05</span> object · companion object</h2>
+  <p class="lead"><code>object</code>는 클래스 선언과 동시에 인스턴스를 하나만 만드는 문법입니다(싱글톤).</p>
+
+<pre><code>object SessionRegistry {
+    private val sessions = mutableMapOf&lt;Int, String&gt;()
+    fun register(id: Int, name: String) { sessions[id] = name }
+    fun all() = sessions.toMap()
+}
+
+SessionRegistry.register(1, "Kim")   // 인스턴스화 없이 바로 사용</code></pre>
+
+  <h3>companion object — 클래스에 딸린 정적 멤버</h3>
+<pre><code>class Person private constructor(val name: String) {
+    companion object {
+        const val DEFAULT_ROLE = "guest"
+
+        fun fromRawName(raw: String): Person = Person(raw.trim())
+    }
+}
+
+val p = Person.fromRawName(" Kim ")   // Java의 static factory method와 동일한 용도
+Person.DEFAULT_ROLE</code></pre>
+  <p>생성자를 <code>private</code>으로 막고 companion object의 팩토리 함수로만 생성을 허용하는 패턴은 검증/캐싱이 필요한 객체 생성에 자주 쓰입니다.</p>
+</section>
+
+<section id="value-sealed">
+  <h2><span class="num">06</span> value class · sealed interface</h2>
+
+  <h3>value class (구 inline class) — 런타임 오버헤드 없는 타입 래퍼</h3>
+<pre><code>@JvmInline
+value class SessionId(val raw: Int)
+
+fun connect(id: SessionId) { /* ... */ }
+
+connect(SessionId(42))
+// connect(42)              // 컴파일 에러 — Int와 SessionId는 다른 타입 (타입 안전성 확보)</code></pre>
+  <p>컴파일된 바이트코드에서는 <code>SessionId</code>가 사라지고 그냥 <code>Int</code>로 취급됩니다 — 박싱 없이 타입 안전성만 얻는 트릭입니다. <code>Int</code>나 <code>String</code> 같은 원시값을 의미 단위로 구분하고 싶을 때(예: <code>UserId</code> vs <code>OrderId</code>) 유용합니다.</p>
+
+  <h3>sealed interface — sealed class보다 유연한 계층</h3>
+<pre><code>sealed interface UiState
+data class Loaded(val items: List&lt;String&gt;) : UiState
+data object Loading : UiState
+data class Error(val message: String) : UiState
+
+fun render(state: UiState) = when (state) {
+    is Loaded -> println(state.items)
+    is Loading -> println("로딩 중")
+    is Error -> println("에러: ${state.message}")
+    // else 불필요 — 컴파일러가 모든 하위 타입을 알고 있어 exhaustive 체크
+}</code></pre>
+</section>
+
+<section id="destructuring">
+  <h2><span class="num">07</span> 구조분해 · typealias</h2>
+
+<pre><code>data class Point(val x: Int, val y: Int)
+
+val (x, y) = Point(1, 2)     // data class는 componentN()이 자동 생성돼서 구조분해 가능
+println("$x, $y")
+
+for ((key, value) in mapOf("a" to 1, "b" to 2)) {
+    println("$key=$value")    // Map.Entry도 구조분해 지원
+}
+
+// typealias — 복잡한 타입에 이름 붙이기
+typealias SessionMap = MutableMap&lt;Int, Person&gt;
+typealias OnConnect = (Person) -&gt; Unit
+
+fun subscribe(handler: OnConnect) { /* ... */ }</code></pre>
+</section>
+
+<section id="sequence">
+  <h2><span class="num">08</span> Sequence — 지연 평가</h2>
+  <p class="lead"><code>List</code>의 <code>filter</code>/<code>map</code> 체이닝은 매 단계마다 새 리스트를 만듭니다(즉시 평가). <code>Sequence</code>는 최종 연산 시점까지 계산을 미루는 지연 평가(lazy evaluation) 컬렉션입니다.</p>
+
+<pre><code>val result = (1..1_000_000)
+    .asSequence()
+    .filter { it % 2 == 0 }
+    .map { it * it }
+    .take(3)
+    .toList()   // 여기서 비로소 실제 계산 시작 — 중간 리스트를 만들지 않음
+
+// List로 그냥 체이닝했다면 100만 개 전부에 filter/map을 적용한 뒤 앞 3개만 취함
+// Sequence는 앞 3개를 채울 때까지만 원소를 처리하고 멈춤</code></pre>
+  <p>큰 컬렉션을 여러 단계로 가공할 때, 특히 중간에 <code>take</code>/<code>first</code>처럼 일부만 필요한 경우 성능 차이가 큽니다.</p>
+</section>
+
+<section id="coroutines">
+  <h2><span class="num">09</span> 코루틴 기초</h2>
+  <p class="lead">서버/네트워크 코드에서 가장 많이 쓰게 될 부분입니다. 스레드를 블로킹하지 않고 비동기 작업을 "동기 코드처럼" 작성하게 해줍니다. <code>kotlinx-coroutines-core</code> 의존성이 필요합니다.</p>
+
+<pre><code>// app/build.gradle.kts에 추가
+dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+}</code></pre>
+
+<pre><code>import kotlinx.coroutines.*
+
+suspend fun fetchUser(id: Int): String {
+    delay(100)              // Thread.sleep과 달리 스레드를 블로킹하지 않음
+    return "User($id)"
+}
+
+fun main() = runBlocking {
+    val user = fetchUser(1)   // 마치 동기 함수처럼 호출
+    println(user)
+
+    launch {                   // 새 코루틴 실행 — 결과를 기다리지 않고 다음 줄로 진행
+        delay(200)
+        println("launch 완료")
+    }
+
+    val deferred = async {     // 값을 반환하는 코루틴
+        fetchUser(2)
+    }
+    println(deferred.await())  // 결과가 필요한 시점에 대기
+}</code></pre>
+
+  <table>
+    <thead><tr><th>키워드</th><th>의미</th></tr></thead>
+    <tbody>
+      <tr><td><code>suspend</code></td><td>이 함수는 중단(suspend)될 수 있음을 표시 — 다른 suspend 함수나 코루틴 안에서만 호출 가능</td></tr>
+      <tr><td><code>runBlocking</code></td><td>현재 스레드를 블로킹하며 코루틴 실행 — 주로 <code>main()</code>이나 테스트 진입점에만 사용</td></tr>
+      <tr><td><code>launch</code></td><td>결과값이 필요 없는 코루틴 시작 (fire-and-forget), <code>Job</code> 반환</td></tr>
+      <tr><td><code>async</code></td><td>결과값이 필요한 코루틴 시작, <code>Deferred&lt;T&gt;</code> 반환 → <code>.await()</code>로 값 획득</td></tr>
+    </tbody>
+  </table>
+
+  <div class="warn"><strong>흔한 실수</strong> <code>runBlocking</code>을 서버의 요청 처리 경로 안에 남발하면 스레드 블로킹이 그대로 발생해서 코루틴 도입 효과가 없어집니다. <code>runBlocking</code>은 "동기 세계에서 코루틴 세계로 진입하는 다리" 용도로만, 최상위(진입점)에서만 쓰세요.</div>
+</section>
+
+<section id="structured-concurrency">
+  <h2><span class="num">10</span> 구조적 동시성</h2>
+  <p class="lead">코루틴은 부모-자식 관계로 묶여서, 부모가 취소되면 자식도 함께 취소되고 부모는 모든 자식이 끝날 때까지 기다립니다. "떠다니는" 백그라운드 작업이 생기지 않도록 하는 설계입니다.</p>
+
+<pre><code>suspend fun loadDashboard() = coroutineScope {
+    val users = async { fetchUsers() }
+    val sessions = async { fetchSessions() }
+    // 두 작업 다 끝나야 이 함수가 반환됨. 하나가 실패하면 나머지도 자동 취소됨
+    Dashboard(users.await(), sessions.await())
+}
+
+// 취소 전파 예시
+val job = CoroutineScope(Dispatchers.Default).launch {
+    val child = launch {
+        delay(1000)
+        println("이 줄은 실행 안 됨")
+    }
+}
+job.cancel()   // child도 함께 취소됨</code></pre>
+
+  <h3>Dispatcher — 어느 스레드(풀)에서 실행할지</h3>
+<pre><code>launch(Dispatchers.IO) { /* 네트워크/파일 I/O */ }
+launch(Dispatchers.Default) { /* CPU 연산 */ }
+launch(Dispatchers.Main) { /* UI 스레드 (Android 등) */ }
+
+withContext(Dispatchers.IO) {
+    // 이 블록만 IO 디스패처에서 실행, 끝나면 원래 컨텍스트로 복귀
+}</code></pre>
+</section>
+
+<section id="flow">
+  <h2><span class="num">11</span> Flow — 비동기 스트림</h2>
+  <p class="lead">단일 값을 반환하는 <code>suspend</code> 함수와 달리, <code>Flow</code>는 여러 값을 시간에 걸쳐 순차적으로 방출하는 콜드 스트림입니다. RxJava의 Observable과 비슷한 역할을 코루틴 방식으로 제공합니다.</p>
+
+<pre><code>import kotlinx.coroutines.flow.*
+
+fun sessionUpdates(): Flow&lt;String&gt; = flow {
+    repeat(3) { i -&gt;
+        delay(100)
+        emit("update-$i")   // 값을 하나씩 방출
+    }
+}
+
+fun main() = runBlocking {
+    sessionUpdates()
+        .filter { it.endsWith("1") || it.endsWith("2") }
+        .map { it.uppercase() }
+        .collect { println(it) }   // 최종 연산 — 여기서 실제로 실행됨
+}</code></pre>
+
+  <div class="note"><strong>콜드 스트림</strong> <code>collect</code>를 호출하기 전까지 <code>flow { }</code> 블록은 실행되지 않습니다. <code>collect</code>할 때마다 처음부터 다시 실행됩니다 — List가 아니라 "값을 만드는 레시피"에 가깝습니다.</div>
+</section>
+
+<section id="dsl">
+  <h2><span class="num">12</span> DSL 만들기 (수신 객체 람다)</h2>
+  <p class="lead">지금 프로젝트의 <code>build.gradle.kts</code> 자체가 Kotlin DSL의 예시입니다. 이런 <code>dependencies { ... }</code> 스타일 문법을 직접 만들 수 있습니다. 핵심은 "수신 객체를 가진 람다(lambda with receiver)"입니다.</p>
+
+<pre><code>class PersonBuilder {
+    var name: String = ""
+    var connected: Boolean = false
+    private val roles = mutableListOf&lt;String&gt;()
+
+    fun role(name: String) { roles.add(name) }
+
+    fun build() = Person(name, connected, roles.toList())
+}
+
+// 수신 객체 람다: PersonBuilder.() -&gt; Unit
+fun person(block: PersonBuilder.() -&gt; Unit): Person {
+    val builder = PersonBuilder()
+    builder.block()       // 람다 안에서 this가 builder를 가리킴
+    return builder.build()
+}
+
+// 사용하는 쪽 — build.gradle.kts와 같은 느낌
+val p = person {
+    name = "Kim"           // this.name — builder의 프로퍼티에 바로 접근
+    connected = true
+    role("admin")
+    role("operator")
+}</code></pre>
+
+  <p><code>PersonBuilder.() -&gt; Unit</code> 타입이 핵심입니다. 일반 람다 <code>() -&gt; Unit</code>과 달리, 이 람다 안에서는 <code>this</code>가 <code>PersonBuilder</code> 인스턴스가 되어 마치 그 클래스 내부에 있는 것처럼 프로퍼티/함수에 바로 접근할 수 있습니다. Gradle, Ktor 라우팅, Jetpack Compose가 전부 이 패턴 위에 만들어져 있습니다.</p>
+
+  <p class="top-link"><a href="#generics">↑ 목차로 돌아가기</a></p>
+</section>
+
+</main>
+</div>
+
+<footer>
+  study-kotlin 스터디용 참고 문서 · 이전 단계: <a href="kotlin-basics.html">Kotlin 기초 튜토리얼</a>
+</footer>
+
+</body>
+</html>
