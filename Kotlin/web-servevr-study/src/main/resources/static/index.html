@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>WebSocket Playground</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+  input, select, button { font: inherit; padding: .3rem .5rem; }
+  #log { height: 360px; overflow-y: auto; background: #111; color: #ddd; padding: .5rem; font-family: monospace; font-size: 13px; }
+  .row { display: flex; gap: .5rem; margin: .5rem 0; }
+  .row input[type=text] { flex: 1; }
+</style>
+</head>
+<body>
+<h1>WebSocket Playground</h1>
+<div class="row">
+  <select id="endpoint">
+    <option value="/ws/echo">step1 · echo</option>
+    <option value="/ws/ticker">step2 · ticker</option>
+    <option value="/ws/chat?name=">step3 · chat</option>
+  </select>
+  <input id="name" type="text" placeholder="채팅 이름 (step3)">
+  <button id="connect">connect</button>
+  <button id="disconnect">disconnect</button>
+</div>
+<div class="row">
+  <input id="msg" type="text" placeholder="메시지 (ticker는 ms 숫자)">
+  <button id="send">send</button>
+</div>
+<pre id="log"></pre>
+<script>
+  const $ = (id) => document.getElementById(id);
+  let ws;
+  const log = (s) => { $('log').textContent += s + '\n'; $('log').scrollTop = 1e9; };
+
+  $('connect').onclick = () => {
+    ws?.close();
+    let path = $('endpoint').value;
+    if (path.endsWith('name=')) path += encodeURIComponent($('name').value);
+    ws = new WebSocket(`ws://${location.host}${path}`);
+    ws.onopen = () => log(`-- open ${path}`);
+    ws.onmessage = (e) => log(e.data);
+    ws.onclose = (e) => log(`-- closed (${e.code} ${e.reason})`);
+  };
+  $('disconnect').onclick = () => ws?.close();
+  const send = () => { if (ws?.readyState === 1) { ws.send($('msg').value); $('msg').value = ''; } };
+  $('send').onclick = send;
+  $('msg').onkeydown = (e) => { if (e.key === 'Enter') send(); };
+</script>
+</body>
+</html>
