@@ -24,3 +24,12 @@ class User(
     val userAccountInfo : UserAccountInfo,
     val userProfile : UserProfile
 )
+
+
+class UserFactory(
+    
+)
+
+class UserManager(
+    
+)
