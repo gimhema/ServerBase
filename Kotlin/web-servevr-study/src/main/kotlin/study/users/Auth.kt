@@ -1,5 +1,6 @@
 package study.users
 
+import at.favre.lib.crypto.bcrypt.BCrypt
 import java.util.concurrent.ConcurrentHashMap
 
 
@@ -38,6 +39,18 @@ class InMemoryCredentialRepository : CredentialRepository {
 interface PasswordHasher {
     fun hash(rawPassword: String): String
     fun matches(rawPassword: String, passwordHash: String): Boolean
+}
+
+// cost: 2^cost 번 반복 — 1 올릴 때마다 계산 시간 약 2배
+class BcryptPasswordHasher(
+    private val cost: Int = 12
+) : PasswordHasher {
+    override fun hash(rawPassword: String): String =
+        BCrypt.withDefaults().hashToString(cost, rawPassword.toCharArray())
+
+    // 솔트와 cost는 passwordHash 안에 들어 있어서 그대로 꺼내 다시 계산함
+    override fun matches(rawPassword: String, passwordHash: String): Boolean =
+        BCrypt.verifyer().verify(rawPassword.toCharArray(), passwordHash).verified
 }
 
 

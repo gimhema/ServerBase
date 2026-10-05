@@ -20,6 +20,7 @@ dependencies {
     implementation(libs.ktor.server.websockets)
     implementation(libs.ktor.server.call.logging)
     implementation(libs.logback.classic)
+    implementation(libs.bcrypt)
 
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.websockets)
