@@ -13,6 +13,4 @@ data class UserRegistFailure(val error: Throwable) : UserRegistResut()
 
 interface UserRegister {
     fun requestCreateNewUser(request : RegisterRequest)
-    // fun findByLoginId(loginId: String): UserCredential?
-    // fun save(credential: UserCredential)
 }
