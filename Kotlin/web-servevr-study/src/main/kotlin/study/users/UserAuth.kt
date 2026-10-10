@@ -1,9 +1,11 @@
 package study.users
 
 import at.favre.lib.crypto.bcrypt.BCrypt
+import kotlinx.serialization.Serializable
 import java.util.concurrent.ConcurrentHashMap
 
 
+@Serializable
 data class LoginRequest(
     val loginId : String,
     val loginPassword : String
@@ -18,7 +20,9 @@ data class UserCredential(
 
 interface CredentialRepository {
     fun findByLoginId(loginId: String): UserCredential?
-    fun save(credential: UserCredential)
+
+    // 같은 loginId가 이미 있으면 저장하지 않고 false — 중복 확인과 저장이 한 번에(원자적으로) 일어나야 함
+    fun saveIfAbsent(credential: UserCredential): Boolean
 }
 
 // DB 구축 전 테스트용 — 서버 재시작 시 데이터 사라짐
@@ -27,12 +31,8 @@ class InMemoryCredentialRepository : CredentialRepository {
 
     override fun findByLoginId(loginId: String): UserCredential? = byLoginId[loginId]
 
-    override fun save(credential: UserCredential) {
-        // 이미 있는 loginId면 덮어쓰지 않고 실패시킴 (동시 가입 시 중복 방지)
-        check(byLoginId.putIfAbsent(credential.loginId, credential) == null) {
-            "이미 존재하는 loginId: ${credential.loginId}"
-        }
-    }
+    override fun saveIfAbsent(credential: UserCredential): Boolean =
+        byLoginId.putIfAbsent(credential.loginId, credential) == null
 }
 
 
@@ -58,8 +58,16 @@ class Authenticator(
     private val credentials: CredentialRepository,  // loginId로 UserCredential 조회
     private val hasher: PasswordHasher,             // 비밀번호 해시 비교
 ) {
+    // 없는 loginId일 때도 해시 비교를 한 번 수행하기 위한 더미 값
+    private val dummyHash by lazy { hasher.hash("dummy-password") }
+
     fun authenticate(request: LoginRequest): UserId? {
-        val credential = credentials.findByLoginId(request.loginId) ?: return null
+        val credential = credentials.findByLoginId(request.loginId)
+        if (credential == null) {
+            // 바로 return하면 응답이 눈에 띄게 빨라져서, 응답 시간만으로 가입된 아이디인지 알아낼 수 있음
+            hasher.matches(request.loginPassword, dummyHash)
+            return null
+        }
         if (!hasher.matches(request.loginPassword, credential.passwordHash)) return null
         return credential.uid
     }
