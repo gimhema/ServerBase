@@ -24,6 +24,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.logback.classic)
     implementation(libs.bcrypt)
+    implementation(libs.sqlite.jdbc)
 
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.ktor.client.websockets)
