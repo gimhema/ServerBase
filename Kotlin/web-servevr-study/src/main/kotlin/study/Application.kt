@@ -9,6 +9,9 @@ import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.routing.*
 import io.ktor.server.websocket.*
+import study.db.Database
+import study.db.SqliteCredentialRepository
+import study.db.SqliteProfileRepository
 import study.step1.echoRoute
 import study.step2.tickerRoute
 import study.step3.ChatRoom
@@ -34,9 +37,10 @@ fun Application.module() {
 
     val chatRoom = ChatRoom()
 
-    // 저장소 — DB를 붙일 때는 이 두 줄만 DB 구현으로 교체
-    val credentials = InMemoryCredentialRepository()
-    val profiles = InMemoryProfileRepository()
+    // 저장소 — 다른 DB로 옮길 때는 이 부분만 교체
+    val database = Database(System.getenv("USER_DB_PATH") ?: "data/users.db").apply { createSchema() }
+    val credentials = SqliteCredentialRepository(database)
+    val profiles = SqliteProfileRepository(database)
 
     // 서비스
     val hasher = BcryptPasswordHasher()

@@ -1,7 +1,6 @@
 package study.users
 
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 
 @JvmInline
 value class UserId(val value: UUID) {
@@ -18,18 +17,9 @@ data class UserProfile(
 )
 
 
+// 구현: study.db.SqliteProfileRepository (테스트용 메모리 구현은 src/test)
 interface ProfileRepository {
-    fun findByUid(uid: UserId): UserProfile?
-    fun save(profile: UserProfile)
+    suspend fun findByUid(uid: UserId): UserProfile?
+    suspend fun save(profile: UserProfile)
 }
 
-// DB 구축 전 테스트용 — 서버 재시작 시 데이터 사라짐
-class InMemoryProfileRepository : ProfileRepository {
-    private val byUid = ConcurrentHashMap<UserId, UserProfile>()
-
-    override fun findByUid(uid: UserId): UserProfile? = byUid[uid]
-
-    override fun save(profile: UserProfile) {
-        byUid[profile.uid] = profile
-    }
-}

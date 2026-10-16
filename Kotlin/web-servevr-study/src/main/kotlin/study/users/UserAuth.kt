@@ -2,7 +2,6 @@ package study.users
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 import kotlinx.serialization.Serializable
-import java.util.concurrent.ConcurrentHashMap
 
 
 @Serializable
@@ -18,23 +17,13 @@ data class UserCredential(
 )
 
 
+// 구현: study.db.SqliteCredentialRepository (테스트용 메모리 구현은 src/test)
 interface CredentialRepository {
-    fun findByLoginId(loginId: String): UserCredential?
+    suspend fun findByLoginId(loginId: String): UserCredential?
 
     // 같은 loginId가 이미 있으면 저장하지 않고 false — 중복 확인과 저장이 한 번에(원자적으로) 일어나야 함
-    fun saveIfAbsent(credential: UserCredential): Boolean
+    suspend fun saveIfAbsent(credential: UserCredential): Boolean
 }
-
-// DB 구축 전 테스트용 — 서버 재시작 시 데이터 사라짐
-class InMemoryCredentialRepository : CredentialRepository {
-    private val byLoginId = ConcurrentHashMap<String, UserCredential>()
-
-    override fun findByLoginId(loginId: String): UserCredential? = byLoginId[loginId]
-
-    override fun saveIfAbsent(credential: UserCredential): Boolean =
-        byLoginId.putIfAbsent(credential.loginId, credential) == null
-}
-
 
 interface PasswordHasher {
     fun hash(rawPassword: String): String
@@ -61,7 +50,7 @@ class Authenticator(
     // 없는 loginId일 때도 해시 비교를 한 번 수행하기 위한 더미 값
     private val dummyHash by lazy { hasher.hash("dummy-password") }
 
-    fun authenticate(request: LoginRequest): UserId? {
+    suspend fun authenticate(request: LoginRequest): UserId? {
         val credential = credentials.findByLoginId(request.loginId)
         if (credential == null) {
             // 바로 return하면 응답이 눈에 띄게 빨라져서, 응답 시간만으로 가입된 아이디인지 알아낼 수 있음

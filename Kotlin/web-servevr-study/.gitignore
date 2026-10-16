@@ -3,3 +3,9 @@
 build/
 .idea/
 *.iml
+
+# 로컬 SQLite DB (회원정보 포함 — 커밋 금지)
+data/
+*.db
+*.db-wal
+*.db-shm

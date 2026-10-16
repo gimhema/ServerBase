@@ -23,7 +23,7 @@ class UserRegister(
     private val profiles: ProfileRepository,
     private val hasher: PasswordHasher,
 ) {
-    fun register(request: RegisterRequest): RegisterResult {
+    suspend fun register(request: RegisterRequest): RegisterResult {
         validate(request)?.let { return RegisterResult.InvalidInput(it) }
 
         // 해싱은 느리니까 명백한 중복은 먼저 걸러냄 (최종 판단은 아래 saveIfAbsent)
