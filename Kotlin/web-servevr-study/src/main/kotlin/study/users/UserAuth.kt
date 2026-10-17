@@ -17,14 +17,6 @@ data class UserCredential(
 )
 
 
-// 구현: study.db.SqliteCredentialRepository (테스트용 메모리 구현은 src/test)
-interface CredentialRepository {
-    suspend fun findByLoginId(loginId: String): UserCredential?
-
-    // 같은 loginId가 이미 있으면 저장하지 않고 false — 중복 확인과 저장이 한 번에(원자적으로) 일어나야 함
-    suspend fun saveIfAbsent(credential: UserCredential): Boolean
-}
-
 interface PasswordHasher {
     fun hash(rawPassword: String): String
     fun matches(rawPassword: String, passwordHash: String): Boolean

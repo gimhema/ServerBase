@@ -15,11 +15,3 @@ data class UserProfile(
     val userName : String,
     val description : String = ""
 )
-
-
-// 구현: study.db.SqliteProfileRepository (테스트용 메모리 구현은 src/test)
-interface ProfileRepository {
-    suspend fun findByUid(uid: UserId): UserProfile?
-    suspend fun save(profile: UserProfile)
-}
-
