@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Auth Playground</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+  input, button { font: inherit; padding: .3rem .5rem; }
+  form { border: 1px solid #ccc; border-radius: 6px; padding: .5rem 1rem 1rem; margin: 1rem 0; }
+  label { display: flex; flex-direction: column; margin: .5rem 0; font-size: 14px; }
+  .hint { color: #777; font-size: 12px; }
+  #log { height: 240px; overflow-y: auto; background: #111; color: #ddd; padding: .5rem; font-family: monospace; font-size: 13px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h1>Auth Playground</h1>
+<p><a href="/">← WebSocket Playground</a></p>
+
+<!-- 브라우저 검증(pattern, minlength)은 입력 편의용. 최종 검증은 서버(UserRegister.validate)가 함 -->
+<form id="register">
+  <h2>회원가입</h2>
+  <label>loginId
+    <input name="loginId" required pattern="[a-z0-9_]{4,20}" autocomplete="username">
+    <span class="hint">영문 소문자, 숫자, _ 조합 4~20자</span>
+  </label>
+  <label>password
+    <input name="password" type="password" required minlength="8" autocomplete="new-password">
+    <span class="hint">8자 이상 (최대 72바이트)</span>
+  </label>
+  <label>userName
+    <input name="userName" required maxlength="20">
+  </label>
+  <button>가입</button>
+</form>
+
+<form id="login">
+  <h2>로그인</h2>
+  <label>loginId
+    <input name="loginId" required autocomplete="username">
+  </label>
+  <label>password
+    <input name="loginPassword" type="password" required autocomplete="current-password">
+  </label>
+  <button>로그인</button>
+</form>
+
+<pre id="log"></pre>
+<script>
+  const $ = (id) => document.getElementById(id);
+  // 서버 응답을 그대로 보여줄 때 innerHTML 대신 textContent를 써서 응답 안의 문자열이 HTML로 해석되지 않게 함
+  const log = (s) => { $('log').textContent += s + '\n'; $('log').scrollTop = 1e9; };
+
+  // form 입력값을 JSON으로 만들어 POST — 필드 name이 서버의 RegisterRequest / LoginRequest 필드명과 같아야 함
+  async function postForm(form, path) {
+    const body = JSON.stringify(Object.fromEntries(new FormData(form)));
+    const button = form.querySelector('button');
+    button.disabled = true;   // bcrypt 때문에 응답이 수백 ms 걸리므로 중복 클릭 방지
+    try {
+      const res = await fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body });
+      const text = await res.text();
+      log(`POST ${path} → ${res.status}\n${text}\n`);
+      return res.ok ? JSON.parse(text) : null;
+    } catch (e) {
+      log(`POST ${path} → 네트워크 오류: ${e}\n`);
+      return null;
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  $('register').onsubmit = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    if (await postForm(form, '/auth/register')) {
+      // 가입 성공하면 로그인 폼에 아이디를 채워줌
+      $('login').loginId.value = form.loginId.value;
+      form.reset();
+    }
+  };
+
+  $('login').onsubmit = async (e) => {
+    e.preventDefault();
+    if (await postForm(e.target, '/auth/login')) e.target.loginPassword.value = '';
+  };
+</script>
+</body>
+</html>
