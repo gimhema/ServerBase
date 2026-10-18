@@ -18,5 +18,12 @@ internal object Schema {
             description TEXT NOT NULL DEFAULT ''
         )
         """,
+            """
+        CREATE TABLE IF NOT EXISTS user_roles (
+            uid  TEXT NOT NULL REFERENCES credentials(uid) ON DELETE CASCADE,
+            role TEXT NOT NULL,
+            PRIMARY KEY (uid, role)
+        )
+            """,
     )
 }
