@@ -18,3 +18,9 @@ interface ProfileRepository {
     suspend fun findByUid(uid: UserId): UserProfile?
     suspend fun save(profile: UserProfile)
 }
+
+interface RoleRepository {
+    suspend fun findByUid(uid : UserId) : UserRole?
+    suspend fun grant(uid: UserId, role : Role)
+    suspend fun revoke(uid: UserId, role : Role)
+}
